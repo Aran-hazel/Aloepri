@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-/home/nss-d/sf/Aloepri}"
+REPO_DIR="${REPO_DIR:-/home/nss-d/Aloepri}"
 MODEL_DIR="${MODEL_DIR:-/home/nss-d/dcy/codes/ModelSplit/models/Llama-3.2-3B-Instruct}"
-CONDA_ENV="${CONDA_ENV:-qwen-transformers}"
+CONDA_ENV="${CONDA_ENV:-aloepri}"
 DTYPE="${DTYPE:-bfloat16}"
 EXPORT_DEVICE="${EXPORT_DEVICE:-cpu}"
 INFER_DEVICE="${INFER_DEVICE:-cuda}"
