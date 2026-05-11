@@ -1,149 +1,113 @@
-> Canonical note: 本文档只回答当前 `Llama-3.2-3B` 噪声定标与 `Stage K` 推进状态，不承担全局主线说明。Llama 唯一主线入口见 [docs/Llama-3.2-3B最终部署主线.md](Llama-3.2-3B最终部署主线.md)。
+> Canonical note: 本文档只回答当前 `Llama-3.2-3B-Instruct` 的噪声工作点继承与 `Stage K` 推进状态，不承担全局主线说明。Llama 唯一主线入口见 [docs/Llama-3.2-3B最终部署主线.md](Llama-3.2-3B最终部署主线.md)。
 
-# Llama-3.2-3B 噪声定标与 Stage K 推进说明
+# Llama-3.2-3B-Instruct 噪声工作点与 Stage K 推进说明
 
-本文档说明在 `Llama-3.2-3B` 已完成：
+## 1. 当前语义变化
 
-- 结构接入
-- Stage I
-- Stage J
-- 真实 4090 correctness 验证
+旧 Llama 主线使用：
 
-之后，如何继续把其工作进度推进到与 Qwen 更接近的交付层级。
+- `stable_reference`
+- `tiny_a`
 
----
+作为 release profile。现在这两个名称不再是活跃 release profile，只保留为历史噪声定标语义。
 
-## 1. 当前目标
+当前活跃主线改为：
 
-当前 Llama 路线已经完成：
+- 唯一 Stage J 候选：`artifacts/stage_j_llama_instruct_paper_consistent`
+- 唯一 Stage K release：`artifacts/stage_k_llama_release`
+- 活跃 profile：`default` / `reference`
 
-- Stage I（真实 3B）
-- Stage J（真实 3B）
+## 2. 当前继承的噪声工作点
 
-下一步要补齐的是：
+Llama 当前 paper-consistent 工件默认继承旧 `tiny_a` 的非零噪声工作点：
 
-1. **真实 Llama 噪声定标**
-2. **Llama 专属 Stage K release**
+```text
+alpha_e = 0.02
+alpha_h = 0.01
+```
 
----
+原因是历史真实 3B 验证显示该工作点在 generation correctness 上稳定，而论文默认的 `paper_like` 噪声点对当前 Llama standard-shape 路线过强。
 
-## 2. 已新增脚本
+这并不表示 Llama 已经完成论文默认参数同态复现；它只是当前 `Llama-3.2-3B-Instruct` release 的可部署工作点。
 
-### 2.1 真实噪声定标
+## 3. 当前导出入口
 
-- `scripts/run_stage_j_llama_real_noise_calibration.py`
-
-输出：
-
-- `outputs/stage_j_llama/real_noise_calibration.json`
-
-### 2.2 导出推荐非零工作点
-
-复用：
-
-- `scripts/export_stage_j_llama_real_checkpoint.py`
-
-例如导出 `tiny_a`：
+导出 Stage J：
 
 ```bash
-conda run --no-capture-output -n qwen-transformers python scripts/export_stage_j_llama_real_checkpoint.py \
-  --model-dir /home/nss-d/dcy/codes/ModelSplit/models/Llama-3.2-3B \
-  --export-dir artifacts/stage_j_llama_real_full_square_tiny_a \
-  --dtype bfloat16 \
+python scripts/export_stage_j_llama_paper_consistent_checkpoint.py \
+  --model-dir model/Llama-3.2-3B-Instruct \
+  --export-dir artifacts/stage_j_llama_instruct_paper_consistent \
   --device cpu \
+  --dtype bfloat16 \
   --alpha-e 0.02 \
   --alpha-h 0.01
 ```
 
-### 2.3 Llama Stage K release
+导出 Stage K：
 
-- `src/stage_k_llama_release.py`
-- `scripts/export_stage_k_llama_release.py`
+```bash
+python scripts/export_stage_k_llama_release.py \
+  --export-dir artifacts/stage_k_llama_release \
+  --materialize
+```
 
-输出：
+运行 correctness：
 
-- `artifacts/stage_k_llama_release/`
+```bash
+python scripts/run_stage_k_llama_release_correctness.py \
+  --baseline-model-dir model/Llama-3.2-3B-Instruct \
+  --release-dir artifacts/stage_k_llama_release \
+  --profiles default reference \
+  --device cuda \
+  --dtype bfloat16
+```
 
-### 2.4 一键推进脚本
+## 4. 当前 Stage K catalog 语义
 
-- `scripts/run_llama_3b_stagek_pipeline.sh`
+`artifacts/stage_k_llama_release/catalog.json` 应包含：
 
-它会依次执行：
+- `stage_lineage = paper_consistent_stage_j`
+- `recommended_profile = "default"`
+- `reference_profile = "reference"`
+- `profiles = ["default", "reference"]`
 
-1. 真实噪声定标
-2. 导出 `tiny_a` 真实工件
-3. 跑 `tiny_a` remote validation
-4. 导出 `stage_k_llama_release`
+两个 profile 都指向：
 
----
+```text
+artifacts/stage_j_llama_instruct_paper_consistent
+```
 
-## 3. 当前状态
+## 5. 历史噪声材料如何理解
 
-当前已经完成的是：
-
-- 真实 `Llama-3.2-3B` 噪声定标
-- `tiny_a` 真实工件导出
-- `tiny_a` 真实 correctness 验证
-- `artifacts/stage_k_llama_release/` 导出
-
-对应关键结果：
-
-### 3.1 真实噪声定标结果
-
-结果文件：
+以下对象只用于说明旧路线如何选择工作点，不再代表当前 release 主线：
 
 - `outputs/stage_j_llama/real_noise_calibration.json`
-
-当前排序：
-
-- `stable_reference`
-- `tiny_a`
-- `tiny_b`
-- `small_a`
-- `small_c`
-- `small_b`
-- `paper_like`
-
-说明：
-
-- `stable_reference` 仍然是最稳的 correctness 基线
-- `tiny_a` 是当前最佳非零工作点
-- `paper_like` 在真实 `Llama-3.2-3B` 上明显过强，不适合作为默认部署点
-
-### 3.2 `tiny_a` 真实验证结果
-
-结果文件：
-
 - `outputs/stage_j_llama/real_tiny_a_remote_validation.json`
+- `artifacts/stage_j_llama_real_full_square`
+- `artifacts/stage_j_llama_real_full_square_tiny_a`
 
-关键结果：
+当前 correctness 只认 Stage K 自身路径：
 
-- `avg_full_logits_max_abs_error = 0.2578125`
-- `avg_last_token_logits_max_abs_error = 0.159375`
-- `greedy_first_token_match_rate = 1.0`
-- `generated_ids_exact_match_rate = 1.0`
-- `generated_text_exact_match_rate = 1.0`
+```text
+outputs/stage_k_llama_release/correctness/default.json
+outputs/stage_k_llama_release/correctness/reference.json
+outputs/stage_k_llama_release/correctness_summary.json
+```
 
-说明：
+## 6. 当前结论
 
-> `tiny_a = (alpha_e=0.02, alpha_h=0.01)` 在真实 `Llama-3.2-3B` 上保持了完整的 generation correctness，因此可作为当前推荐非零工作点。
+Llama 已经从旧的 `stable_reference / tiny_a` release profile 语义切换到 `Llama-3.2-3B-Instruct paper_consistent` release 语义。
 
-### 3.3 Llama Stage K release
+当前已经对齐 Qwen 的部分：
 
-结果文件：
+- 唯一 Stage J 源工件
+- 唯一 Stage K release 面
+- `default` / `reference` profile
+- release-surface correctness 证据入口
 
-- `artifacts/stage_k_llama_release/catalog.json`
+尚未对齐 Qwen 的部分：
 
-当前已经包含两个 profile：
-
-- `stable_reference`
-- `tiny_a`
-
-其中：
-
-- `recommended_profile = "tiny_a"`
-- `stable_reference_profile = "stable_reference"`
-
-因此当前可以正式给出结论：
-
-> **Llama-3.2-3B 已经完成噪声定标与 Stage K release 包装，并形成独立可运行 release；但整体仍明显落后于 Qwen 主线，尤其缺少论文一致安全闭环。**
+- `VMA / IMA / ISA` 安全评测闭环
+- 更完整的论文复杂扰动恢复
+- 论文默认参数和 public corpus 规模同态复跑

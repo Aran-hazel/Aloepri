@@ -20,7 +20,7 @@ from src.stage_j_block0 import build_stage_j_square_model
 
 
 def main() -> None:
-    model_dir = Path("model/Llama-3.2-3B")
+    model_dir = Path("model/Llama-3.2-3B-Instruct")
     output_path = Path("outputs/llama_local_smoke.json")
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

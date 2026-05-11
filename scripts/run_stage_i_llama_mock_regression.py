@@ -20,7 +20,7 @@ from src.transforms import map_input_ids, restore_logits
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Stage-I regression on a mock Llama Stage-A checkpoint.")
-    parser.add_argument("--model-dir", default="model/Llama-3.2-3B")
+    parser.add_argument("--model-dir", default="model/Llama-3.2-3B-Instruct")
     parser.add_argument("--server-dir", default="artifacts/stage_i_llama_mock/server")
     parser.add_argument("--client-secret", default="artifacts/stage_i_llama_mock/client/client_secret.pt")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)

@@ -19,7 +19,7 @@ from src.transforms import map_input_ids, restore_logits
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Stage-J regression on a mock Llama full-layer standard-shape checkpoint.")
-    parser.add_argument("--model-dir", default="model/Llama-3.2-3B")
+    parser.add_argument("--model-dir", default="model/Llama-3.2-3B-Instruct")
     parser.add_argument("--server-dir", default="artifacts/stage_j_llama_mock_full_square/server")
     parser.add_argument("--client-secret", default="artifacts/stage_j_llama_mock_full_square/client/client_secret.pt")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)

@@ -5,21 +5,24 @@ from pathlib import Path
 from src.stage_k_release import StageKProfile, export_stage_k_release
 
 
+DEFAULT_LLAMA_PAPER_CONSISTENT_DIR = "artifacts/stage_j_llama_instruct_paper_consistent"
+
+
 def default_stage_k_llama_profiles() -> list[StageKProfile]:
     return [
         StageKProfile(
-            name="stable_reference",
-            source_dir="artifacts/stage_j_llama_real_full_square",
-            description="Zero-noise Llama-3.2-3B standard-shape full-layer checkpoint.",
-            recommended_use="Regression baseline, correctness debugging, deterministic demos.",
-            correctness_evidence_file="outputs/stage_j_llama/real_remote_validation.json",
+            name="default",
+            source_dir=DEFAULT_LLAMA_PAPER_CONSISTENT_DIR,
+            description="Default paper-consistent Llama-3.2-3B-Instruct Stage-J release profile.",
+            recommended_use="Default delivery entry for the paper-consistent Llama Instruct deployment line.",
+            correctness_evidence_file="outputs/stage_k_llama_release/correctness/default.json",
         ),
         StageKProfile(
-            name="tiny_a",
-            source_dir="artifacts/stage_j_llama_real_full_square_tiny_a",
-            description="Recommended non-zero noise Llama-3.2-3B standard-shape full-layer checkpoint.",
-            recommended_use="Default delivery profile for Llama-3.2-3B when non-zero obfuscation noise is required.",
-            correctness_evidence_file="outputs/stage_j_llama/real_tiny_a_remote_validation.json",
+            name="reference",
+            source_dir=DEFAULT_LLAMA_PAPER_CONSISTENT_DIR,
+            description="Reference paper-consistent Llama-3.2-3B-Instruct Stage-J release profile.",
+            recommended_use="Audit and evidence entry for the same paper-consistent Llama Instruct deployment line.",
+            correctness_evidence_file="outputs/stage_k_llama_release/correctness/reference.json",
         ),
     ]
 
@@ -33,7 +36,7 @@ def export_stage_k_llama_release(
         export_dir,
         profiles=default_stage_k_llama_profiles(),
         materialize=materialize,
-        recommended_profile="tiny_a",
-        reference_profile="stable_reference",
-        title="Stage-K Llama Release",
+        recommended_profile="default",
+        reference_profile="reference",
+        title="Stage-K Paper-Consistent Llama-3.2-3B-Instruct Release",
     )

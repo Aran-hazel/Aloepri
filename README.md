@@ -47,7 +47,7 @@ Qwen 活跃阶段支撑文档：
 
 ---
 
-## Llama-3.2-3B 最终部署主线
+## Llama-3.2-3B-Instruct 论文一致最终部署主线
 
 Llama 当前只保留一条活跃主线：
 
@@ -55,16 +55,15 @@ Llama 当前只保留一条活跃主线：
 
 当前关键工件：
 
-- `artifacts/stage_j_llama_real_full_square/`
-- `artifacts/stage_j_llama_real_full_square_tiny_a/`
+- `artifacts/stage_j_llama_instruct_paper_consistent/`
 - `artifacts/stage_k_llama_release/`
 
 当前状态：
 
-- Llama 当前明显落后于 Qwen，仍主要停留在 `deployability / correctness` 交付层，不是论文同态收口
-- adapter、本机 smoke、Stage I、Stage J 已成立
-- 真实 `RTX 4090` correctness 验证已完成
-- 噪声定标与 Llama 专属 `Stage K release` 已完成
+- Llama 默认模型线已切到 `Llama-3.2-3B-Instruct`
+- Llama 已收口为唯一 `paper_consistent` Stage J 候选
+- `Stage K` 已切到与 Qwen 同构的 `default / reference` release surface
+- Llama 仍未补齐与 Qwen 同强度的 `VMA / IMA / ISA` 安全闭环
 
 Llama 活跃支撑文档：
 
@@ -101,7 +100,7 @@ Llama release 推理：
 ```bash
 conda run --no-capture-output -n qwen-transformers python scripts/infer_stage_k_release.py \
   --release-dir artifacts/stage_k_llama_release \
-  --profile tiny_a \
+  --profile default \
   --prompt "请用一句话介绍你自己。" \
   --max-new-tokens 8
 ```

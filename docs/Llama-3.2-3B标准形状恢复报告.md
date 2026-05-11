@@ -1,8 +1,8 @@
-> Canonical note: 本文档只回答当前 `Llama-3.2-3B` 标准形状恢复与 correctness 证据，不承担全局主线说明。Llama 唯一主线入口见 [docs/Llama-3.2-3B最终部署主线.md](Llama-3.2-3B最终部署主线.md)。
+> Canonical note: 本文档只回答 `Llama-3.2-3B / Llama-3.2-3B-Instruct` 标准形状恢复与 correctness 证据，不承担全局主线说明。Llama 唯一主线入口见 [docs/Llama-3.2-3B最终部署主线.md](Llama-3.2-3B最终部署主线.md)。
 
-# Llama-3.2-3B 标准形状本机恢复报告
+# Llama-3.2-3B-Instruct 标准形状本机恢复报告
 
-本文档记录当前在**本机 CPU 环境**下，围绕 `Llama-3.2-3B` 所能完成的标准形状（standard-shape）接入与验证工作。
+本文档记录当前在**本机 CPU 环境**下，围绕 `Llama-3.2-3B-Instruct` 所能完成的标准形状（standard-shape）接入与验证工作。旧 base `Llama-3.2-3B` 的验证材料只保留为历史对照。
 
 ## 1. 本机目标
 
@@ -128,17 +128,19 @@ conda run --no-capture-output -n qwen-transformers python scripts/run_stage_j_ll
 
 > 基于本地 `Llama-3.2-3B` tokenizer/config 与随机 mock Llama baseline，Stage J 的 standard-shape full-layer 路线已经在本机闭环成立。
 
-## 5. 云端真实 `Llama-3.2-3B` 验证结果
+## 5. 云端真实 `Llama-3.2-3B-Instruct` 验证入口
 
-云端真实模型目录：
+当前云端真实模型目录应使用：
 
-- `/home/nss-d/dcy/codes/ModelSplit/models/Llama-3.2-3B`
+- `/home/nss-d/dcy/codes/ModelSplit/models/Llama-3.2-3B-Instruct`
 
 云端仓库目录：
 
 - `/home/nss-d/sf/Aloepri`
 
-### 5.1 Stage I artifact sanity
+以下旧 base 模型结果保留为历史参考；当前 Instruct 主线需要以 Stage K release-surface correctness 重新落盘。
+
+### 5.1 历史 Stage I artifact sanity
 
 结果文件：
 
@@ -161,7 +163,7 @@ conda run --no-capture-output -n qwen-transformers python scripts/run_stage_j_ll
 
 > 真实 `Llama-3.2-3B` 的 Stage I 导出不是近似导出，而是标准 HF 工件形态下的精确物化。
 
-### 5.2 Stage I remote validation
+### 5.2 历史 Stage I remote validation
 
 结果文件：
 
@@ -181,7 +183,7 @@ conda run --no-capture-output -n qwen-transformers python scripts/run_stage_j_ll
 
 > 真实 `Llama-3.2-3B` 上，Stage I（词表空间闭环）已经严格成立。
 
-### 5.3 Stage J remote validation
+### 5.3 历史 Stage J remote validation
 
 结果文件：
 
@@ -223,7 +225,8 @@ conda run --no-capture-output -n qwen-transformers python scripts/run_stage_j_ll
 
 本机阶段尚未完成的内容：
 
-- 未进行真实 `Llama-3.2-3B` 权重推理
+- 当前文档中的历史数值来自旧 base `Llama-3.2-3B`
+- 新 `Llama-3.2-3B-Instruct` 主线需要重新运行 Stage K correctness
 - 未验证真实 28-layer / 3072 hidden / 8 KV heads 的数值行为
 - 未做 vLLM
 

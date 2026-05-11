@@ -1,130 +1,210 @@
-# Llama-3.2-3B 最终部署主线
+# Llama-3.2-3B-Instruct 论文一致最终部署主线
 
 ## 1. 唯一目标
 
-当前 Llama-3.2-3B 文档只保留一条主线：
+当前 Llama 文档只保留一条主线：
 
-> **Llama-3.2-3B 的最终可交付部署线**
+> **Llama-3.2-3B-Instruct 的论文一致最终可交付部署线**
 
-这条主线当前以独立 `Stage K` release 为最终交付面：
+这条主线的最终目标与 Qwen 当前部署线保持同构：
 
-- `artifacts/stage_k_llama_release`
+- 标准 Transformer 运行图
+- 标准 `model.* / lm_head.*` 键布局
+- 尽量保留可部署的 embedding / head / attention / FFN / norm 参数扰动表达
+- 形成最终可交付的独立 `Stage K` release
 
-当前 Llama 主线明显落后于 Qwen。
+当前唯一活跃模型根为：
+
+- `model/Llama-3.2-3B-Instruct`
 
 ## 2. 当前状态总览
 
-当前 Llama 主线已经完成：
+当前 Llama 不再把 `stable_reference / tiny_a` 作为活跃主线 profile 语义。
 
-- `LlamaArchitectureAdapter` 接入
-- 本机 smoke、Stage I、Stage J 标准形状导出链路成立
-- 真实 `RTX 4090` 上的 correctness 验证
-- 真实噪声定标
-- Llama 专属 `Stage K release`
+它们现在只保留为历史噪声定标和旧交付线证据。当前唯一主线已经收口到：
 
-这意味着当前 Llama 主线已经从“结构接入实验”推进到“真实可交付部署线”，但它仍主要停留在 `deployability / correctness` 交付层，不是论文同态收口。
+- `Stage J` 唯一候选：`artifacts/stage_j_llama_instruct_paper_consistent`
+- `Stage K` 唯一 release 面：`artifacts/stage_k_llama_release`
+- 活跃 profile：`default` / `reference`
 
-## 3. 当前 release 语义
+这次改造的含义是：
 
-当前 `artifacts/stage_k_llama_release` 使用两个 profile：
+- Llama 默认模型从 base `Llama-3.2-3B` 切换为 `Llama-3.2-3B-Instruct`
+- Llama release 组织方式与 Qwen 的 `paper_consistent` 部署线对齐
+- release-surface correctness 不再借 Stage J 的 `real_tiny_a` 结果代指，而是使用 `Stage K` 自身路径
+- 安全评测仍未达到 Qwen 的完整闭环强度
 
-- `stable_reference`
-- `tiny_a`
-
-它们的语义是：
-
-- `stable_reference`：零噪声 correctness / 调试基线
-- `tiny_a`：当前推荐的非零噪声默认交付 profile
-
-当前推荐 profile 为：
-
-- `tiny_a`
-
-## 4. 当前活跃文档
-
-Llama 主线当前只保留这 3 份活跃支撑文档：
+当前活跃支撑文档为：
 
 - [docs/Llama-3.2-3B标准形状恢复报告.md](Llama-3.2-3B标准形状恢复报告.md)
 - [docs/Llama-3.2-3B噪声定标与StageK推进说明.md](Llama-3.2-3B噪声定标与StageK推进说明.md)
 - [docs/Llama-3.2-3B客户端与Server使用说明.md](Llama-3.2-3B客户端与Server使用说明.md)
 
-它们分别回答：
+## 3. 当前 `Stage H / I / J / K` 含义
 
-- 标准形状恢复与 correctness 证据
-- 噪声定标与 release profile 形成
-- 实际 client/server 使用方式
+### Stage H
 
-## 5. 从接入到交付的主线摘要
+沿用论文部署适配原则，定义哪些混淆表达仍可被吸收到标准 Transformer 参数中。
 
-### 5.1 结构接入阶段
+### Stage I
 
-- 让仓库识别 `LlamaForCausalLM`
-- 打通 `llama_decoder` 结构下的主干导出路径
+验证 Llama Instruct 工件是否仍可作为标准 Hugging Face checkpoint 加载，并保持 client/server token mapping 契约。
 
-### 5.2 本机验证阶段
+### Stage J
 
-- 用 mock / smoke 方式验证 Stage I 与 Stage J 的标准形状导出链路
-- 证明这条线在本机 CPU 上已可导出、可回归、可为云端验证准备工件
+把 Llama Instruct 目标收束为唯一论文一致候选：
 
-### 5.3 云端真实验证阶段
+- `artifacts/stage_j_llama_instruct_paper_consistent`
 
-- 在真实 `Llama-3.2-3B` 与 `RTX 4090` 环境下完成 correctness 验证
-- 确认 Stage I 与 Stage J 都达到可用交付标准
+当前导出入口为：
 
-### 5.4 噪声定标与 release 阶段
+```bash
+python scripts/export_stage_j_llama_paper_consistent_checkpoint.py \
+  --model-dir model/Llama-3.2-3B-Instruct \
+  --export-dir artifacts/stage_j_llama_instruct_paper_consistent \
+  --device cpu \
+  --dtype bfloat16 \
+  --alpha-e 0.02 \
+  --alpha-h 0.01
+```
 
-- 对真实 3B 工件进行噪声定标
-- 形成 `stable_reference` / `tiny_a` 两个活跃 profile
-- 导出独立的 `Stage K` release
+### Stage K
 
-## 6. 与 Qwen 的关键差异
+把最终确认后的 `Stage J` 产物整理成唯一 release 面：
 
-Llama 与 Qwen 采用相同的高层复现逻辑，但当前活跃语义并不相同。
+- `artifacts/stage_k_llama_release`
 
-- Qwen 当前根口径是 `paper_consistent`
-- Llama 当前根口径是自身 release profile：`stable_reference / tiny_a`
-- Qwen 当前活跃问题集中在最终 release 面的复跑与安全复证
-- Llama 当前更像“release 已成型，但论文同口径安全叙事仍未完全补齐”
+当前活跃 profile 为：
 
-因此两条线是并行活跃主线，不是同一条线的不同名字；其中 Llama 当前明显落后于 Qwen。
+- `default`
+- `reference`
 
-## 7. 与原始论文的差异
+两个 profile 当前都指向同一个 `paper_consistent` Llama Instruct 源工件，但承担不同入口语义：
 
-当前 Llama 主线已经形成了可部署工件，但仍与原始论文理想目标存在差异。
+- `default`：默认交付入口
+- `reference`：审计与证据入口
 
-### 已对齐的部分
+## 4. 当前证据入口
 
-- 标准 HF 工件形态
-- client/server 闭环
-- correctness 层面的真实验证
-- 非零噪声工作点与 release packaging
+当前直接证据入口为：
 
-### 尚未完全对齐的部分
+- `Stage K` release surface：`artifacts/stage_k_llama_release`
+- `Stage K` catalog：`artifacts/stage_k_llama_release/catalog.json`
+- `Stage K` correctness evidence：
+  - `outputs/stage_k_llama_release/correctness/default.json`
+  - `outputs/stage_k_llama_release/correctness/reference.json`
+  - `outputs/stage_k_llama_release/correctness_summary.json`
 
-- 尚未形成与 Qwen `paper_consistent` 对应的论文一致根口径
-- 尚未完成与论文同强度、同口径的安全攻击评测闭环
-- 当前更强调 `deployability / correctness`，而不是已经完成所有论文层面的最终证明
+对应 correctness 入口：
 
-## 8. 当前仍未完成的关键项
+```bash
+python scripts/run_stage_k_llama_release_correctness.py \
+  --baseline-model-dir model/Llama-3.2-3B-Instruct \
+  --release-dir artifacts/stage_k_llama_release \
+  --profiles default reference \
+  --device cuda \
+  --dtype bfloat16
+```
 
-- 以当前 `Stage K` release 为口径补齐更完整的安全评测
-- 视需要补齐更强部署后端或更广复跑口径
-- 如后续要与 Qwen 更强对齐，再决定是否引入统一的论文一致语义根
+## 5. 云端部署顺序
 
-## 9. 当前证据入口
+在云端 GPU 机器上，推荐顺序为：
 
-- `stable_reference` correctness：`outputs/stage_j_llama/real_remote_validation.json`
-- `tiny_a` correctness：`outputs/stage_j_llama/real_tiny_a_remote_validation.json`
-- 噪声定标结果：`outputs/stage_j_llama/real_noise_calibration.json`
-- `Stage K` release catalog：`artifacts/stage_k_llama_release/catalog.json`
-- 活跃 release 面：`artifacts/stage_k_llama_release`
+1. 下载或准备 `model/Llama-3.2-3B-Instruct`
+2. 运行 baseline smoke：
 
-## 10. 历史文档
+```bash
+python scripts/run_llama_baseline_smoke.py \
+  --model-dir model/Llama-3.2-3B-Instruct \
+  --device cuda \
+  --dtype bfloat16
+```
 
-以下旧文档将统一迁入 `docs/history/llama/`：
+3. 导出 Stage J 论文一致候选：
+
+```bash
+python scripts/export_stage_j_llama_paper_consistent_checkpoint.py \
+  --model-dir model/Llama-3.2-3B-Instruct \
+  --export-dir artifacts/stage_j_llama_instruct_paper_consistent \
+  --device cpu \
+  --dtype bfloat16
+```
+
+4. 导出 Stage K release：
+
+```bash
+python scripts/export_stage_k_llama_release.py \
+  --export-dir artifacts/stage_k_llama_release \
+  --materialize
+```
+
+5. 运行 release-surface correctness：
+
+```bash
+python scripts/run_stage_k_llama_release_correctness.py \
+  --baseline-model-dir model/Llama-3.2-3B-Instruct \
+  --release-dir artifacts/stage_k_llama_release \
+  --profiles default reference \
+  --device cuda \
+  --dtype bfloat16
+```
+
+6. 运行最终 smoke：
+
+```bash
+python scripts/infer_stage_k_release.py \
+  --release-dir artifacts/stage_k_llama_release \
+  --profile default \
+  --prompt "请用一句话介绍你自己。" \
+  --max-new-tokens 8
+```
+
+或者直接使用：
+
+```bash
+bash scripts/run_llama_3b_stagek_pipeline.sh
+```
+
+## 6. 与 Qwen 的当前差异
+
+Llama 当前已经在 Stage J/K 组织方式上与 Qwen 对齐：
+
+- 都有唯一 `paper_consistent` Stage J 源工件
+- 都有唯一 Stage K release 面
+- 都使用 `default` / `reference` profile
+- 都要求 release-surface correctness 证据落在 Stage K 自身路径
+
+但 Llama 仍弱于 Qwen：
+
+- 尚未补齐与 Qwen 同强度的 `VMA / IMA / ISA` 安全评测闭环
+- 当前 Llama 的 paper-consistent 工件仍使用 standard-shape square transform 路线，尚未完整恢复论文中所有 attention / FFN / norm 复杂扰动表达
+- 仍需在真实云端环境复跑并落盘新的 Stage K correctness 结果
+
+## 7. 历史语义说明
+
+以下名称现在只保留历史证据价值：
+
+- `stable_reference`
+- `tiny_a`
+- `artifacts/stage_j_llama_real_full_square`
+- `artifacts/stage_j_llama_real_full_square_tiny_a`
+- `outputs/stage_j_llama/real_remote_validation.json`
+- `outputs/stage_j_llama/real_tiny_a_remote_validation.json`
+
+它们不再代表当前活跃 Llama release profile 语义。
+
+历史使用说明与旧计划保留在：
 
 - `docs/history/llama/Llama-3.2-3B快速使用说明.md`
 - `docs/history/llama/Llama-3.2-3B云端验证说明.md`
 - `docs/history/llama/Llama-3.2-3B本机改造与云验证计划.md`
 
-它们只保留历史或辅助说明价值，不再作为当前主线入口。
+## 8. 当前仍未完成的关键项
+
+- 在云端真实 `Llama-3.2-3B-Instruct` 上重新落盘 Stage K correctness
+- 以当前 `Stage K` release 为口径补齐更完整安全评测
+- 继续向论文部署适配机制靠拢，恢复更多 attention / FFN / norm 参数层复杂扰动
+
+## 9. 一句话结论
+
+当前 Llama 主线已经从旧的 `stable_reference / tiny_a` 交付线改为 `Llama-3.2-3B-Instruct paper_consistent` 部署线；代码和 release 组织方式已经与 Qwen 当前部署线对齐，但安全评测和复杂扰动恢复程度仍需要后续继续补齐。

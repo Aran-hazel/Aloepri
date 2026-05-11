@@ -15,7 +15,7 @@ from src.stage_i_vllm import export_stage_i_vllm_checkpoint, summarize_token_par
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export a mock Llama Stage-J full-layer standard-shape checkpoint.")
-    parser.add_argument("--model-dir", default="model/Llama-3.2-3B")
+    parser.add_argument("--model-dir", default="model/Llama-3.2-3B-Instruct")
     parser.add_argument("--export-dir", default="artifacts/stage_j_llama_mock_full_square")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--alpha-e", type=float, default=0.0)

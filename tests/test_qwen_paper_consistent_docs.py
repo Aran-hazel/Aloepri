@@ -237,10 +237,11 @@ def test_active_qwen_docs_no_longer_use_minimal_ima_as_mainline_wording() -> Non
 
 def test_llama_mainline_doc_lists_release_evidence_inputs() -> None:
     text = Path("docs/Llama-3.2-3B最终部署主线.md").read_text(encoding="utf-8")
-    assert "## 9. 当前证据入口" in text
-    assert "outputs/stage_j_llama/real_remote_validation.json" in text
-    assert "outputs/stage_j_llama/real_tiny_a_remote_validation.json" in text
+    assert "## 4. 当前证据入口" in text
+    assert "artifacts/stage_j_llama_instruct_paper_consistent" in text
+    assert "outputs/stage_k_llama_release/correctness/default.json" in text
+    assert "outputs/stage_k_llama_release/correctness/reference.json" in text
     assert "artifacts/stage_k_llama_release/catalog.json" in text
-    assert "明显落后于 Qwen" in text
-    assert "不是论文同态收口" in text
+    assert "Llama-3.2-3B-Instruct paper_consistent" in text
+    assert "安全评测和复杂扰动恢复程度仍需要后续继续补齐" in text
     assert "已基本与 Qwen 对齐" not in text

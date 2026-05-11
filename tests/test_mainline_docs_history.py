@@ -46,9 +46,9 @@ def test_repository_overview_has_stage_map_and_paper_gap_matrix() -> None:
     assert "`artifacts/stage_k_release`" in text
     assert "`artifacts/stage_k_llama_release`" in text
     assert "`paper_consistent`" in text
-    assert "`stable_reference / tiny_a`" in text
+    assert "`paper_consistent`" in text
     assert "`VMA / ISA` 已在唯一 release 面上给出低风险结果" in text
     assert "`paper_like IMA` 已在唯一 release 面上复跑，并回到低风险" in text
     assert "历史最小基线高风险" not in text
     assert "Qwen 是当前仓库中最完整、最接近论文闭环、已基本完善的主线" in text
-    assert "Llama 明显落后于 Qwen" in text
+    assert "Llama 已切到 `Llama-3.2-3B-Instruct`" in text
